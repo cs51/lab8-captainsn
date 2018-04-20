@@ -124,7 +124,7 @@ one. If there is no listener with that id, do nothing.
 ......................................................................*)
             
   let remove_listener (evt : 'a event) (i : id) : unit =
-    evt := List.filter (fun w -> not (w.id = i)) !evt
+    evt := List.filter (fun w -> w.id <> i) !evt
 
 (*......................................................................
 Exercise 3: Write fire_event, which will execute all event handlers
