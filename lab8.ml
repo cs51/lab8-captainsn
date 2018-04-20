@@ -6,7 +6,6 @@
 
 (*
 Objective:
-
 This lab introduces events and listeners, a paradigm that is
 particularly useful in the programming of front-end applications.
 Event programming in the back-end has also grown in popularity
@@ -16,7 +15,6 @@ with the rise of Node.js.
    
 (*====================================================================
                          Events and Listeners
-
 Imagine that you were writing an operating system and wanted to provide
 an application programming interface (API) for programmers to write a
 user interface. Given what you've learned, how would you design this
@@ -25,7 +23,6 @@ an application could call a method in your API to draw a button.
 This has the benefit of allowing you to control the button style
 throughout the whole OS, and the application's developer need
 only call a single method to draw a button in an application. 
-
 Once you've added buttons to your API, how would you allow 
 client applications to react to, say, a mouse click? 
 One way might be to add a function parameter to the button creation 
@@ -35,7 +32,6 @@ presses the button. This type of parameter is referred to as a *callback*:
 a function that is passed to another function, which the latter
 then executes at the appropriate time. (Higher-order
 functional programming makes this approach very natural.)
-
 Now imagine a more complex situation: you would like to allow the user
 to interact with buttons in a myriad of ways. Perhaps the user
 could long-click, double-click, right-click, or maybe even use the
@@ -43,23 +39,19 @@ keyboard to activate the button. An application might require
 different behavior in each case; that would mean many individual
 callbacks. Adding parameters for each type of interaction quickly
 becomes untenable. 
-
 One solution to this problem is to leverage *events*. Programmers
 using your API write functions that are designed to handle
 various events, like a keyboard press or a right-click, and notify
 the API which functions react to these events by "registering" the
 functions for those events.
-
 JavaScript makes frequent use of this paradigm. For example, you might 
 have code that executes a function when 
 the "onclick" event is fired. This event is named appropriately: 
 it is the one that is fired upon clicking an on-screen object.
-
 In the end, there are several requirements for events to work: we must
 define an event itself (like "onclick"), have listeners for those
 events (like a function that is executed in response to the "onclick"
 event), and provide a mechanism that "fires" the event.
-
 This lab walks through each of these steps to build a simple event
 system. First, we'll define an event interface.  *)
 
@@ -123,7 +115,8 @@ decide how to implement this.
                                                    
   let add_listener (evt : 'a event) (listener : 'a -> unit) : id =
     let i = new_id () in
-    evt := {id = i; action = listener} :: !evt ; i
+    evt := {id = i; action = listener} :: !evt; i
+
 (*......................................................................
 Exercise 2: Write remove_listener, which, given an id and an event,
 unregisters the listener with that id from the event if there is
@@ -131,7 +124,7 @@ one. If there is no listener with that id, do nothing.
 ......................................................................*)
             
   let remove_listener (evt : 'a event) (i : id) : unit =
-    evt := List.filter (fun ev -> ev.id <> i) !evt 
+    evt := List.filter (fun w -> not (w.id = i)) !evt
 
 (*......................................................................
 Exercise 3: Write fire_event, which will execute all event handlers
@@ -139,13 +132,12 @@ listening for the event.
 ......................................................................*)
             
   let fire_event (evt : 'a event) (arg : 'a) : unit =
-    List.iter (fun ev -> ev.action arg) !evt 
+    List.iter (fun w -> w.action arg) !evt
 
 end
   
 (*====================================================================
                A sample application: Newswire headlines
-
 Let's now put this to use by creating a newswire. In this example,
 reporters on the ground can create events that fire when they discover
 a news headline in the field. News outlets subscribe to these events
@@ -156,9 +148,8 @@ Exercise 4: Given your implementation of Event, create a new event
 called "newswire" that should pass strings to the event handlers.
 ......................................................................*)
   
-let newswire : string WEvent.event =
-  WEvent.new_event () ;;
- 
+let newswire : string WEvent.event = WEvent.new_event () ;;
+
 (* News organizations might want to register event listeners to the
 newswire so that they might report on stories. Below are functions
 for two organizations that accept headlines and "publish" stories (to
@@ -193,7 +184,6 @@ WEvent.fire_event newswire h1 ;;
 WEvent.fire_event newswire h2 ;;
 WEvent.fire_event newswire h3 ;;
 
-
 (* Imagine now that you work at Facebook, and you're growing concerned
 with the proliferation of fake news. To combat the problem, you decide
 that headlines shouldn't be published right when the wires flash them;
@@ -213,8 +203,7 @@ Exercise 8: Create a new event called publish to signal that all
 stories should be published. The event should be a unit WEvent.event.
 ......................................................................*)
 
-let publish : unit WEvent.event = 
-  WEvent.new_event () ;; 
+let publish : unit WEvent.event = WEvent.new_event () ;; 
 
 (*......................................................................
 Exercise 9: Write a function receive_report to handle new news
@@ -225,9 +214,9 @@ by registering appropriate listeners, one for each news network,
 waiting for the publish event.
 ......................................................................*)
 
-let receive_report (s : string) : unit =
-  ignore (WEvent.add_listener publish (fun () -> fakeNewsNetwork s)) ;
-  ignore (WEvent.add_listener publish (fun () -> buzzFake s)) ;;
+let receive_report (s : string) : unit = 
+  ignore(WEvent.add_listener publish (fun () -> fakeNewsNetwork s)) ;
+  ignore(WEvent.add_listener publish (fun () -> buzzFake s)) ;;
 
 (*......................................................................
 Exercise 10: Register the receieve_report listener to listen for the
